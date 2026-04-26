@@ -1,0 +1,7 @@
+{
+  "name": "memory-manager",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Multi-Agent memory management system for OpenClaw",
+  "main": "memory-manager.js"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "web-content-download",
+  "version": "3.0.0",
+  "author": "based on article by Tom哥",
+  "description": "Download web pages as Markdown with images (WeChat MP, Cloudflare, etc.)",
+  "tags": ["web", "download", "markdown", "images", "wechat", "scraper"],
+  "scripts": [
+    {
+      "name": "web-content-download.sh",
+      "description": "Bash script for web content download",
+      "usage": "./scripts/web-content-download.sh <url>"
+    },
+    {
+      "name": "web-content-download.py",
+      "description": "Python script for web content download",
+      "usage": "python3 scripts/web-content-download.py <url> --save"
+    }
+  ],
+  "dependencies": [
+    "git+https://github.com/D4Vinci/Scrapling.git",
+    "html2text",
+    "requests"
+  ]
+}
