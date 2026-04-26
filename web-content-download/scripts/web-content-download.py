@@ -327,7 +327,7 @@ def download_to_file(url: str, output_base: str = None, max_chars: int = 50000,
         dict with output_dir, markdown_file, images_dir
     """
     if output_base is None:
-        output_base = '/Users/onlyone/ai_code/data/web-content-download'
+        output_base = '/Users/onlyone/ai_zhushou/data/web-content-download'
     
     # First fetch to get title
     fetcher = Fetcher()
@@ -411,8 +411,8 @@ Examples:
                         help='Download images locally')
     parser.add_argument('--output-dir', '-o', default='./images',
                         help='Output directory for images (default: ./images)')
-    parser.add_argument('--output-base', '-b', default='/Users/onlyone/ai_code/data/web-content-download',
-                        help='Base directory for auto-save (default: /Users/onlyone/ai_code/data/web-content-download)')
+    parser.add_argument('--output-base', '-b', default='/Users/onlyone/ai_zhushou/data/web-content-download',
+                        help='Base directory for auto-save (default: /Users/onlyone/ai_zhushou/data/web-content-download)')
     parser.add_argument('--save', '-s', action='store_true', default=True,
                         help='Auto-save to ./downloads/<title>_<timestamp>/ (default: True)')
     parser.add_argument('--no-images', action='store_true',

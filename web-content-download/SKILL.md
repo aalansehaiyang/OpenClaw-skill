@@ -1,7 +1,7 @@
 ---
 name: web-content-download
 version: 4.0.0
-description: **Download web pages as Markdown with images**. Auto-saves to `/Users/onlyone/ai_code/data/web-content-download/<文章标题>_<timestamp>/`. Supports anti-scraping (WeChat MP, Cloudflare, etc.). **DEFAULT TOOL for web extraction**.
+description: **Download web pages as Markdown with images**. Auto-saves to `/Users/onlyone/ai_zhushou/data/web-content-download/<文章标题>_<timestamp>/`. Supports anti-scraping (WeChat MP, Cloudflare, etc.). **DEFAULT TOOL for web extraction**.
 ---
 
 # Web Content Download - 网页内容下载器
@@ -13,7 +13,7 @@ description: **Download web pages as Markdown with images**. Auto-saves to `/Use
 ### 默认用法（推荐）
 
 ```bash
-# 自动保存到 /Users/onlyone/ai_code/data/web-content-download/<文章标题>_<时间戳>/
+# 自动保存到 /Users/onlyone/ai_zhushou/data/web-content-download/<文章标题>_<时间戳>/
 ./scripts/web-content-download.sh "https://mp.weixin.qq.com/s/xxx"
 
 # 或直接用 Python
@@ -23,7 +23,7 @@ python3 scripts/web-content-download.py "https://mp.weixin.qq.com/s/xxx"
 ### 输出结构
 
 ```
-/Users/onlyone/ai_code/data/web-content-download/
+/Users/onlyone/ai_zhushou/data/web-content-download/
 └── 2026-03-10_如何从 CRUD 开发转型为 AI Agent 工程师/
     ├── article.md          # Markdown 文件（含原文标题和图片引用）
     └── images/             # 下载的图片
@@ -56,7 +56,7 @@ python3 scripts/web-content-download.py "https://mp.weixin.qq.com/s/xxx"
 
 | 特性 | 说明 |
 |------|------|
-| **自动保存** | 默认保存到 `/Users/onlyone/ai_code/data/web-content-download/<时间戳>_<标题>/` |
+| **自动保存** | 默认保存到 `/Users/onlyone/ai_zhushou/data/web-content-download/<时间戳>_<标题>/` |
 | **原文标题** | Markdown 以 `# 原文标题` 开头 |
 | **图片下载** | 自动下载所有图片到 `images/` 目录 |
 | **图片引用** | Markdown 中引用本地图片路径 |
