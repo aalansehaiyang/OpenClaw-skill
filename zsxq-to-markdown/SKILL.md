@@ -16,18 +16,22 @@ description: "Download and convert 知识星球 (zsxq.com) articles to clean Mar
 
 ### 2. 用浏览器打开（需登录态）
 
-知识星球文章需要登录才能访问，必须使用 `browser` 工具 + `profile="user"`：
+**⚠️ 强制规则：必须使用用户已打开的 Chrome 浏览器，绝对不要启动新的 Chrome 实例！**
+
+知识星球文章需要登录才能访问，唯一正确的方式是使用 `browser` 工具 + `profile="user"`：
 
 ```
 browser open "https://articles.zsxq.com/id_xxx.html" profile="user"
 browser snapshot targetId=<返回的 targetId>
 ```
 
-> 如果 browser 工具超时，改用 agent-browser CLI + CDP 模式：
-> ```bash
-> agent-browser --cdp 18801 open "https://articles.zsxq.com/id_xxx.html"
-> agent-browser snapshot -i
-> ```
+**禁止**：
+- ❌ 不要启动新的 Chrome 进程
+- ❌ 不要用 agent-browser CLI + 新 CDP 端口（那会启动无登录态的新浏览器）
+- ❌ 不要用 `--user-data-dir` 创建新的 Chrome 实例
+
+**超时重试策略**：
+如果 browser 工具超时失败，不要放弃，也不要重启 gateway。直接用 `profile="user"` 重试，最多重试 3 次。每次重试前等待几秒。
 
 ### 3. 从 snapshot 提取内容
 
@@ -71,6 +75,7 @@ browser snapshot targetId=<返回的 targetId>
 
 ## 注意事项
 
+- **⚠️ 核心规则：只用用户已打开的 Chrome，绝不启动新浏览器**
 - 知识星球是付费私密社群，**必须**使用 `profile="user"` 借用用户已登录的浏览器会话
 - 不要对 zsxq.com 使用 `web_fetch`，它会被重定向到登录页
 - 如果文章有图片，snapshot 中会包含 `image` 元素，可在 Markdown 中用 `![描述](占位)` 标注
