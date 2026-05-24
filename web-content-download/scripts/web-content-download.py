@@ -283,7 +283,81 @@ def extract_content(url: str, max_chars: int = 30000, download_images: bool = Fa
                 return full_tag
             
             html_content = re.sub(r'<img[^>]*>', replace_img_tag, html_content)
-    
+
+    # Strip inline numbering prefixes from <li> elements to prevent duplicate
+    # numbering when html2text converts <ol> (e.g., "1. xxx" inside <li> + html2text's
+    # "1." → "1. 1. xxx").
+    # The numbering pattern inside <li> can appear after wrapper tags like
+    # <section><span>, so we strip it from the leading text of each <li>.
+    _li_num_re = re.compile(
+        r'<li\b([^>]*)>',
+        re.IGNORECASE
+    )
+    _inline_num_re = re.compile(
+        r'^(\s*(?:<[^>]+>\s*)*?)'  # capture leading whitespace + opening wrapper tags
+        r'(?:'
+        r'(?<=\d)[\.、\)\]]\s*'    # after a digit: . 、 ) ] space
+        r'|(?<=\d)'                 # or the digit itself at start
+        r')'
+        r'|'
+        r'^(\s*(?:<[^>]+>\s*)*?)'  # leading whitespace + opening wrapper tags
+        r'(?:'
+        r'\d+[\.、\)\]]\s*'        # 1. 1、 1) 1]
+        r'|[一二三四五六七八九十百零]+[\.、\)\]]\s*'  # 一、 二.
+        r'|[①②③④⑤⑥⑦⑧⑨⑩]\s*'  # ① ②
+        r'|[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ][\.、\)]\s*'  # Ⅰ. Ⅱ.
+        r'|[•·・]\s*'              # bullet points
+        r')',
+        re.DOTALL
+    )
+
+    def _strip_li_inline(html_content: str) -> str:
+        """Remove inline numbering from <li> content to avoid duplication with <ol> numbering."""
+        result = []
+        pos = 0
+        for m in _li_num_re.finditer(html_content):
+            li_start = m.start()
+            result.append(html_content[pos:li_start])
+
+            li_tag = m.group(0)  # e.g., "<li>" or "<li style='...'>"
+
+            # Find the closing </li>
+            close_tag = r'</li>'
+            close_match = re.search(close_tag, html_content[m.end():], re.IGNORECASE)
+            if not close_match:
+                result.append(li_tag)
+                pos = m.end()
+                continue
+
+            inner_end = m.end() + close_match.start()
+            inner = html_content[m.end():inner_end]
+
+            # Strip inline numbering prefix from inner content
+            # Match: optional leading whitespace + wrapper open tags + numbering pattern
+            stripped = re.sub(
+                r'^(\s*(?:<[a-z][^>]*>\s*)*?)'  # leading whitespace + wrapper open tags
+                r'(?:'
+                r'\d+[\.、\)\]]\s*'           # 1. 1、 1) 1]
+                r'|[一二三四五六七八九十百零]+[\.、\)\]]\s*'  # 一、 二.
+                r'|[①②③④⑤⑥⑦⑧⑨⑩]\s*'     # ① ②
+                r'|[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ][\.、\)]\s*'  # Ⅰ. Ⅱ.
+                r'|[•·・]\s*'                # bullet
+                r')',
+                r'\1',
+                inner,
+                count=1,
+                flags=re.DOTALL
+            )
+
+            result.append(li_tag)
+            result.append(stripped)
+            pos = inner_end
+
+        result.append(html_content[pos:])
+        return ''.join(result)
+
+    html_content = _strip_li_inline(html_content)
+
     # Convert HTML to Markdown
     h = html2text.HTML2Text()
     h.ignore_links = False
