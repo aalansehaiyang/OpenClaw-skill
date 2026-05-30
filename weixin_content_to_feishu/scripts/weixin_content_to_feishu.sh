@@ -94,6 +94,16 @@ def replace_img(m):
     idx += 1
     return f"[FEISHU_IMG_{idx}]"
 content = re.sub(r'!\[[^\]]*\]\(\./images/img_\d+\.(?:jpg|png|webp)\)', replace_img, content)
+# Convert [code]...[/code] to markdown code blocks
+def replace_code(m):
+    return '```\n' + m.group(1).strip() + '\n```'
+content = re.sub(r'\[code\]\n(.*?)\n\[/code\]', replace_code, content, flags=re.DOTALL)
+content = re.sub(r'\[code\](.*?)\[/code\]', r'`\1`', content, flags=re.DOTALL)
+# Normalize line endings and collapse excessive blank lines
+content = content.replace('\r\n', '\n')
+content = re.sub(r'\n{3,}', '\n\n', content)
+# Keep normal double newline between paragraphs (no extra <br/> tags)
+# Feishu markdown handles paragraph spacing natively
 with open(out_path, "w") as f:
     f.write(content)
 print(idx)
@@ -109,6 +119,7 @@ TITLE=$(head -1 "$TEMP_ARTICLE" | sed 's/^#\s*//')
   head -1 "$TEMP_ARTICLE"
   echo ""
   echo "原文：${WEIXIN_URL}"
+  echo ""
   echo ""
   tail -n +2 "$TEMP_ARTICLE"
 } > "${TEMP_ARTICLE}.tmp"
@@ -137,8 +148,8 @@ lark-cli docs +update --api-version v2 \
   --pattern "Untitled" --content "$TITLE" >/dev/null 2>&1 || true
 
 # ─── 步骤 3: 上传图片并定位 ───────────────────────────────
-# Count actual image markers
-ACTUAL_IMG_COUNT=$(grep -o '\[FEISHU_IMG_[0-9]*\]' "$ARTICLE_FILE" 2>/dev/null | wc -l | tr -d ' ')
+# Count actual image markers from the earlier replacement
+ACTUAL_IMG_COUNT=$IMG_COUNT
 
 if [[ "$ACTUAL_IMG_COUNT" -gt 0 && -d "$IMAGES_DIR" ]]; then
   if [[ "$QUIET" != true ]]; then
@@ -232,12 +243,19 @@ for i in range(1, img_count + 1):
         )
 
     # Remove placeholder block - try block_delete first (cleaner), fallback to str_replace
-    res = subprocess.run(
-        ["lark-cli", "docs", "+update", "--api-version", "v2", "--doc", doc_url,
-         "--command", "block_delete", "--block-id", block_id],
-        capture_output=True, text=True
-    )
-    if res.returncode != 0:
+    if block_id:
+        res = subprocess.run(
+            ["lark-cli", "docs", "+update", "--api-version", "v2", "--doc", doc_url,
+             "--command", "block_delete", "--block-id", block_id],
+            capture_output=True, text=True
+        )
+        if res.returncode != 0:
+            subprocess.run(
+                ["lark-cli", "docs", "+update", "--api-version", "v2", "--doc", doc_url,
+                 "--command", "str_replace", "--pattern", f"[FEISHU_IMG_{i}]", "--content", ""],
+                capture_output=True, text=True
+            )
+    else:
         subprocess.run(
             ["lark-cli", "docs", "+update", "--api-version", "v2", "--doc", doc_url,
              "--command", "str_replace", "--pattern", f"[FEISHU_IMG_{i}]", "--content", ""],
